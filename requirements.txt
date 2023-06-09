@@ -2,4 +2,3 @@ requests
 pyyaml
 tk
 pyinstaller
-ssl
