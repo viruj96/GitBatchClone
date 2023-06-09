@@ -31,14 +31,14 @@ Download and install [python](https://www.python.org/downloads/)
 
 > [Optional] Create a virtual environment:
 >
-> Linux:
+> *Linux*:
 >
 > ```bash
 > python -m venv venv
 > source ./venv/bin/activate
 > ```
 >
-> Windows:
+> *Windows*:
 >
 > ```cmd
 > python -m venv venv
@@ -53,3 +53,32 @@ Install all the required modules in the requirements.txt file and run the script
 pip install -r ./requirements.txt
 python ./main.py
 ```
+
+## **Troubleshoot**
+
+If the script fails due to an SSL certificate error, add the GitHub SSL certificate to the trusted certificate store:
+
+- Navigate to [GitHub](https://github.com)
+- Click on the padlock icon in the address bar and view the certificate (this will vary depending on the browser used)
+- Download or export the certificate (again this will depend on the browser). A `.cer` or `.pem` file should be saved
+- Add the file to the trusted store:
+  - *Linux* (the trusted certificate store is usually managed by the OpenSSL library and are stored in `/etc/ssl/certs/`):
+    - Copy the GitHub SSL certificate to `/usr/local/share/ca-certificates/`
+
+	```bash
+	sudo cp github.cer /usr/local/share/ca-certificates/
+	```
+
+    - Update the trusted certificate store
+
+	```bash
+	sudo update-ca-certificates
+	```
+
+  - *Windows*:
+    - Search for `certmgr.msc` to open the Certificate Manager
+
+	![Certificate Manager Window](https://adamtheautomator.com/wp-content/uploads/2020/06/Untitled-57.png)
+
+    - Right click on the `Trusted Root Certification Authorities` folder and choose `All Tasks` > `Import`
+    - Follow the import wizard to select the SSL certificate downloaded earlier

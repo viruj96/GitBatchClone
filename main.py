@@ -1,5 +1,6 @@
 import os
 import sys
+from ssl import SSLError
 from tkinter import Tk, messagebox
 from tkinter.filedialog import askdirectory
 
@@ -104,14 +105,44 @@ os.makedirs(clone_directory, exist_ok=True)
 
 # Get the repositories in the team
 if team_slug:
-    team_repos_url = "https://api.github.com/orgs/{org}/teams/{team_slug}/repos"
+    team_repos_url = f"https://api.github.com/orgs/{org}/teams/{team_slug}/repos"
     print(f"{BLUE}Cloning all repositories in {team_slug} in {org} organization{RESET}")
 else:
-    team_repos_url = "https://api.github.com/orgs/{org}/repos"
+    team_repos_url = f"https://api.github.com/orgs/{org}/repos"
     print(f"{BLUE}Cloning all repositories in {org} organization{RESET}")
-headers = {"Authorization": f"token {token}"}
-repos_response = requests.get(team_repos_url.format(org=org, team_slug=team_slug), headers=headers)
-repos = repos_response.json()
+
+headers = {
+    "Authorization": f"token {token}",
+    "Accept": "application/vnd.github.v3+json"
+}
+repos = []
+page = 1
+
+# Search for repositories in all pages
+while True:
+    try:
+        repos_response = requests.get(team_repos_url, headers=headers, params={"page": page})
+    except SSLError:
+        print(f"{YELLOW}Cannot verify SSL certificate. Add it to the trusted certificate store and run the tool again.{RESET}")
+        input("Press any key to exit...")
+        sys.exit(0)
+
+    try:
+        if repos_response.status_code != 200:
+            raise
+    except:
+        print(f"{YELLOW}Failed to fetch repositories from {team_repos_url}{RESET}")
+        print(f"{RED}Error: {repos_response.text}{RESET}")
+        input("Press any key to exit...")
+        sys.exit(0)
+
+    page_repos = repos_response.json()
+
+    if not page_repos:
+        break
+
+    repos.extend(page_repos)
+    page += 1
 
 try:
     # Track cloning status
